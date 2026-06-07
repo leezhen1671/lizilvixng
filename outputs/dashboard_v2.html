@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.5,user-scalable=yes">
+<title>📊 半导体持仓可视化看板</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  background: #0a0e17; color: #e0e0e0; padding: 12px; min-height: 100vh; }
+.container { max-width: 900px; margin: 0 auto; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; flex-wrap: wrap; gap: 8px; }
+.header h1 { font-size: 20px; font-weight: 700; background: linear-gradient(135deg,#00d8ff,#00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header-right { display: flex; gap: 8px; align-items: center; }
+#lastUpdate { font-size: 11px; color: #666; }
+.btn { padding: 8px 16px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-primary { background: linear-gradient(135deg,#00d8ff,#0099ff); color: #0a0e17; }
+.btn-secondary { background: #1a2835; color: #00d8ff; border: 1px solid #2a3f4d; }
+.btn:active { opacity: .7; }
+
+/* 状态卡片网格 */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 12px 0; }
+.card { background: linear-gradient(135deg,#111d28 0%,#162836 100%); border-radius: 12px; padding: 14px;
+  border: 1px solid #1e3442; position: relative; overflow: hidden; }
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.card.up::before { background: linear-gradient(90deg,#2ed573,#7bed9f); }
+.card.down::before { background: linear-gradient(90deg,#ff4757,#ff6b81); }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.name { font-size: 14px; font-weight: 600; }
+.role { font-size: 10px; background: #1a2835; color: #666; padding: 1px 6px; border-radius: 6px; }
+.price-row { display: flex; align-items: baseline; gap: 8px; }
+.price { font-size: 22px; font-weight: 700; }
+.change { font-size: 12px; font-weight: 500; }
+.up { color: #2ed573; } .down { color: #ff4757; } .flat { color: #666; }
+.meta { display: flex; gap: 6px; margin-top: 6px; font-size: 11px; color: #555; flex-wrap: wrap; }
+.meta span { background: #0a0e17; padding: 2px 8px; border-radius: 6px; }
+
+/* 图表容器 */
+.chart-box { background: linear-gradient(135deg,#111d28 0%,#162836 100%); border-radius: 12px; padding: 16px;
+  margin: 12px 0; border: 1px solid #1e3442; }
+.chart-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #888; }
+.chart { width: 100%; height: 240px; }
+.chart-sm { height: 160px; }
+
+/* 检查清单 */
+.checklist { background: linear-gradient(135deg,#111d28 0%,#162836 100%); border-radius: 12px; padding: 16px;
+  margin: 12px 0; border: 1px solid #1e3442; }
+.checklist h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #888; }
+.checklist label { display: block; font-size: 12px; color: #aaa; margin: 4px 0; cursor: pointer; }
+.checklist input { margin-right: 6px; }
+
+/* 数据历史表格 */
+.history-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 8px; }
+.history-table th { text-align: left; color: #555; padding: 4px 6px; font-weight: 400; }
+.history-table td { padding: 4px 6px; color: #888; }
+.history-table tr:hover td { color: #ccc; background: #0a0e17; }
+.loading { text-align: center; padding: 40px; color: #666; font-size: 14px; }
+.error { background: #2d1b1b; border: 1px solid #663; border-radius: 10px; padding: 12px; margin: 12px 0; font-size: 13px; color: #ff6b6b; }
+.footer { text-align: center; font-size: 10px; color: #333; margin-top: 20px; }
+
+/* tab切换 */
+.tabs { display: flex; gap: 4px; margin: 12px 0; }
+.tab { padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; background: #111d28; color: #555; border: 1px solid transparent; }
+.tab.active { background: #1a2835; color: #00d8ff; border-color: #2a3f4d; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📊 半导体持仓看板</h1>
+    <div class="header-right">
+      <span id="lastUpdate"></span>
+      <button class="btn btn-primary" onclick="refresh()">⟳ 刷新</button>
+    </div>
+  </div>
+  <div id="error" class="error" style="display:none"></div>
+  
+  <div id="content">
+    <div class="loading">加载中...</div>
+  </div>
+</div>
+
+<script>
+const STOCKS = [
+  {name:"全志科技",code:"sz300458",role:"核心持仓"},
+  {name:"瑞芯微",  code:"sh603893",role:"核心持仓"},
+  {name:"恒玄科技",code:"sz300661",role:"竞对参考"},
+  {name:"晶晨股份",code:"sh688099",role:"赛道参考"},
+  {name:"中芯国际",code:"sh688981",role:"代工参考"},
+  {name:"立昂微",  code:"sh605358",role:"上游参考"},
+];
+
+// ========== 价格历史管理 ==========
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('stock_history') || '{}'); } catch { return {}; }
+}
+function saveHistoryPoint(data) {
+  const h = getHistory();
+  const today = new Date().toISOString().slice(0,10);
+  STOCKS.forEach(s => {
+    const d = data[s.name]; if (!d || !d.price) return;
+    if (!h[s.name]) h[s.name] = {};
+    h[s.name][today] = d.price;
+    // 只保留最近60天
+    const dates = Object.keys(h[s.name]).sort();
+    if (dates.length > 60) { delete h[s.name][dates[0]]; }
+  });
+  localStorage.setItem('stock_history', JSON.stringify(h));
+}
+
+// ========== 数据抓取 ==========
+async function refresh() {
+  const c = document.getElementById('content'); const err = document.getElementById('error');
+  err.style.display = 'none'; c.innerHTML = '<div class="loading">📡 获取数据...</div>';
+  try {
+    const codes = STOCKS.map(s=>s.code).join(',');
+    const r = await fetch(`https://hq.sinajs.cn/list=${codes}`,{headers:{'Referer':'https://finance.sina.com.cn'}});
+    const buf = await r.arrayBuffer();
+    const dec = new TextDecoder('gbk');
+    const txt = dec.decode(buf);
+    const data = {};
+    txt.split('\n').forEach(line => {
+      const m = line.match(/hq_str_\w+="(.+)"/); if (!m) return;
+      const p = m[1].split(','); if(p.length<32) return;
+      const close=+p[3], yclose=+p[2];
+      data[p[0]] = { price:close, yclose, open:+p[1], high:+p[4], low:+p[5],
+        volume:+p[8], amount: (+p[9]/1e8).toFixed(2),
+        change: +(close-yclose).toFixed(2),
+        pct: yclose ? +((close-yclose)/yclose*100).toFixed(2) : 0,
+        date:p[30], time:p[31] };
+    });
+    saveHistoryPoint(data);
+    render(data);
+    document.getElementById('lastUpdate').textContent = (data['全志科技']?.date||'')+' '+(data['全志科技']?.time||'');
+  } catch(e) {
+    err.style.display='block';
+    err.innerHTML = `⚠️ ${e.message}`;
+    c.innerHTML = '<div style="text-align:center;padding:20px;color:#666">点击刷新重试</div>';
+  }
+}
+
+// ========== 渲染 ==========
+function render(data) {
+  const c = document.getElementById('content');
+  let html = '';
+  
+  // --- 卡片 ---
+  html += '<div class="grid">';
+  STOCKS.forEach(s => {
+    const d = data[s.name];
+    if (!d) { html += `<div class="card"><div class="card-header"><span class="name">${s.name}</span><span class="role">${s.role}</span></div><div style="color:#555">暂无</div></div>`; return; }
+    const up = d.change>=0;
+    const cls = up?'up':'down';
+    html += `<div class="card ${cls}"><div class="card-header"><span class="name">${s.name}</span><span class="role">${s.role}</span></div>
+      <div class="price-row"><span class="price">¥${d.price.toFixed(2)}</span><span class="change ${up?'up':'down'}">${up?'▲':'▼'}${Math.abs(d.change)} (${d.pct>0?'+':''}${d.pct}%)</span></div>
+      <div class="meta"><span>高 ${d.high.toFixed(2)}</span><span>低 ${d.low.toFixed(2)}</span><span>成交 ${d.amount}亿</span></div></div>`;
+  });
+  html += '</div>';
+
+  // --- 趋势图 ---
+  html += '<div class="chart-box"><div class="chart-title">📈 持仓价格趋势</div><div id="trendChart" class="chart"></div></div>';
+  
+  // --- 涨跌幅对比图 ---
+  html += '<div class="chart-box"><div class="chart-title">📊 当日涨跌幅对比</div><div id="compareChart" class="chart-sm"></div></div>';
+  
+  // --- 数据历史 ---
+  const history = getHistory();
+  const hasHistory = Object.values(history).some(v => Object.keys(v||{}).length > 1);
+  if (hasHistory) {
+    html += '<div class="chart-box"><div class="chart-title">📋 价格历史记录</div><table class="history-table"><tr><th>日期</th>';
+    STOCKS.forEach(s => { if(history[s.name]) html += `<th>${s.name}</th>`; });
+    html += '</tr>';
+    // 获取所有日期
+    const allDates = new Set();
+    STOCKS.forEach(s => { if(history[s.name]) Object.keys(history[s.name]).forEach(d => allDates.add(d)); });
+    const sortedDates = [...allDates].sort().reverse().slice(0,14);
+    sortedDates.forEach(d => {
+      html += `<tr><td>${d}</td>`;
+      STOCKS.forEach(s => { 
+        if(history[s.name]) {
+          const val = history[s.name][d];
+          html += `<td>${val ? '¥'+val.toFixed(2) : '-'}</td>`;
+        }
+      });
+      html += '</tr>';
+    });
+    html += '</table></div>';
+  }
+
+  c.innerHTML = html;
+
+  // --- 渲染 ECharts ---
+  setTimeout(() => drawCharts(data, history), 100);
+}
+
+function drawCharts(data, history) {
+  // 趋势图
+  const hc = document.getElementById('trendChart');
+  if (!hc) return;
+  // 核心持仓的历史数据
+  const coreStocks = ['全志科技','瑞芯微'];
+  const series = [];
+  const allDates = new Set();
+  coreStocks.forEach(n => {
+    if (!history[n]) return;
+    Object.keys(history[n]).forEach(d => allDates.add(d));
+  });
+  const dates = [...allDates].sort();
+  
+  coreStocks.forEach((name, idx) => {
+    const vals = dates.map(d => history[name]?.[d] || null);
+    series.push({
+      name, type: 'line', smooth: true,
+      data: vals, symbol: 'circle', symbolSize: 4,
+      lineStyle: { width: 2 },
+      areaStyle: { opacity: 0.08 },
+      itemStyle: { color: idx === 0 ? '#00d8ff' : '#00ff88' },
+    });
+  });
+  
+  const trend = echarts.init(hc);
+  trend.setOption({
+    tooltip: { trigger: 'axis', textStyle: { fontSize: 12 }, valueFormatter: v => v ? '¥' + v.toFixed(2) : '-' },
+    grid: { left: 50, right: 16, top: 16, bottom: 20 },
+    xAxis: { type: 'category', data: dates, axisLabel: { fontSize: 10, color: '#555' } },
+    yAxis: { type: 'value', splitLine: { lineStyle: { color: '#1a2835' } }, axisLabel: { fontSize: 10, color: '#555', formatter: '¥{value}' } },
+    legend: { data: coreStocks, textStyle: { color: '#888', fontSize: 11 }, bottom: 0 },
+    series,
+  });
+  window.addEventListener('resize', () => trend.resize());
+
+  // 涨跌幅对比
+  const cc = document.getElementById('compareChart');
+  if (!cc) return;
+  const compare = echarts.init(cc);
+  const names = [], vals = [], colors = [];
+  STOCKS.forEach(s => {
+    const d = data[s.name];
+    if (!d || !d.pct) return;
+    names.push(s.name);
+    vals.push(d.pct);
+    colors.push(d.pct >= 0 ? '#2ed573' : '#ff4757');
+  });
+  compare.setOption({
+    tooltip: { trigger: 'axis', formatter: p => p[0]?.name + '<br/>涨跌幅: ' + p[0]?.value + '%' },
+    grid: { left: 12, right: 50, top: 8, bottom: 20 },
+    xAxis: { type: 'category', data: names, axisLabel: { fontSize: 10, color: '#888' } },
+    yAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#555', formatter: '{value}%' }, splitLine: { lineStyle: { color: '#1a2835' } } },
+    series: [{ type: 'bar', data: vals.map((v,i) => ({value: v, itemStyle: {color: colors[i]}})), barWidth: '60%' }],
+  });
+  window.addEventListener('resize', () => compare.resize());
+}
+
+refresh();
+</script>
+</body>
+</html>

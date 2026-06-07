@@ -1,0 +1,102 @@
+{
+  "date": "2026-06-07 13:23",
+  "stocks": {
+    "全志科技": {
+      "role": "核心持仓",
+      "data": {
+        "price": 32.48,
+        "open": 32.65,
+        "yclose": 33.0,
+        "high": 33.29,
+        "low": 31.31,
+        "volume": 33501090,
+        "amount": 10.82,
+        "change": -0.52,
+        "change_pct": -1.58,
+        "date": "2026-06-05"
+      }
+    },
+    "瑞芯微": {
+      "role": "核心持仓",
+      "data": {
+        "price": 173.23,
+        "open": 171.01,
+        "yclose": 173.31,
+        "high": 178.9,
+        "low": 167.0,
+        "volume": 12177500,
+        "amount": 21.14,
+        "change": -0.08,
+        "change_pct": -0.05,
+        "date": "2026-06-05"
+      }
+    },
+    "恒玄科技": {
+      "role": "竞对参考",
+      "data": {
+        "error": "no_data"
+      }
+    },
+    "晶晨股份": {
+      "role": "赛道参考",
+      "data": {
+        "price": 95.88,
+        "open": 97.97,
+        "yclose": 99.07,
+        "high": 98.87,
+        "low": 95.0,
+        "volume": 13425013,
+        "amount": 12.99,
+        "change": -3.19,
+        "change_pct": -3.22,
+        "date": "2026-06-05"
+      }
+    },
+    "圣邦股份": {
+      "role": "赛道参考",
+      "data": {
+        "price": 107.74,
+        "open": 112.16,
+        "yclose": 113.25,
+        "high": 112.5,
+        "low": 106.5,
+        "volume": 16659866,
+        "amount": 18.25,
+        "change": -5.51,
+        "change_pct": -4.87,
+        "date": "2026-06-05"
+      }
+    },
+    "中芯国际": {
+      "role": "代工参考",
+      "data": {
+        "price": 127.4,
+        "open": 131.0,
+        "yclose": 134.88,
+        "high": 134.75,
+        "low": 126.7,
+        "volume": 93457433,
+        "amount": 121.5,
+        "change": -7.48,
+        "change_pct": -5.55,
+        "date": "2026-06-05"
+      }
+    },
+    "立昂微": {
+      "role": "上游参考",
+      "data": {
+        "price": 66.77,
+        "open": 64.89,
+        "yclose": 63.9,
+        "high": 68.37,
+        "low": 63.13,
+        "volume": 102348856,
+        "amount": 67.71,
+        "change": 2.87,
+        "change_pct": 4.49,
+        "date": "2026-06-05"
+      }
+    }
+  },
+  "market_date": "2026-06-05"
+}

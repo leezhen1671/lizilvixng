@@ -1,0 +1,30 @@
+name: 每日半导体数据采集
+
+on:
+  schedule:
+    # 周一到周五 9:30 CST (UTC 1:30)
+    - cron: '30 1 * * 1-5'
+  workflow_dispatch:  # 可手动触发
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 安装依赖
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          python3 -c "import json; print('Python OK')"
+      
+      - name: 采集市场数据
+        run: python3 work/data_collector.py --market
+      
+      - name: 提交数据到仓库
+        run: |
+          git config user.name "leezhen1671"
+          git config user.email "leezhen53@gmail.com"
+          git add outputs/data/
+          # 如果没有新数据，不报错
+          git diff --staged --quiet || git commit -m "📊 每日数据采集 $(date +'%Y-%m-%d')"
+          git push

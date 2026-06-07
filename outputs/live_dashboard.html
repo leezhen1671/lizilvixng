@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.5,user-scalable=yes">
+<title>📊 半导体持仓看板</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC","Microsoft YaHei",sans-serif; 
+  background: #0f1923; color: #e0e0e0; padding: 16px; min-height: 100vh; }
+.container { max-width: 800px; margin: 0 auto; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+h1 { font-size: 20px; font-weight: 700; color: #00d8ff; }
+#lastUpdate { font-size: 12px; color: #888; }
+.card { background: linear-gradient(135deg, #1a2835 0%, #1e3340 100%);
+  border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a3f4d; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.name { font-size: 15px; font-weight: 600; }
+.role { font-size: 11px; background: #2a3f4d; color: #888; padding: 2px 8px; border-radius: 10px; }
+.price-row { display: flex; align-items: baseline; gap: 12px; }
+.price { font-size: 28px; font-weight: 700; }
+.change { font-size: 14px; font-weight: 500; }
+.up { color: #ff4757; } .down { color: #2ed573; } .flat { color: #888; }
+.meta { display: flex; gap: 12px; margin-top: 8px; font-size: 12px; color: #888; flex-wrap: wrap; }
+.meta span { background: #1a2835; padding: 4px 10px; border-radius: 8px; }
+button { background: #00d8ff; color: #0f1923; border: none; padding: 10px 20px; border-radius: 10px; 
+  font-size: 14px; font-weight: 600; cursor: pointer; } 
+button:active { opacity: 0.8; }
+.refresh-time { font-size: 11px; color: #555; margin-top: 4px; }
+.loading { text-align: center; padding: 40px; color: #666; }
+.error { background: #2d1b1b; border: 1px solid #663333; border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 13px; color: #ff6b6b; }
+.footer { text-align: center; font-size: 11px; color: #444; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📊 半导体持仓</h1>
+    <button onclick="fetchData()">⟳ 刷新</button>
+  </div>
+  <div id="lastUpdate"></div>
+  <div id="error" class="error" style="display:none"></div>
+  <div id="content"><div class="loading">正在获取数据...</div></div>
+  <div class="footer">数据来源: 新浪财经 | 实时行情</div>
+</div>
+
+<script>
+const STOCKS = [
+  { name: "全志科技", code: "sz300458", role: "⭐ 核心持仓" },
+  { name: "瑞芯微",   code: "sh603893", role: "⭐ 核心持仓" },
+  { name: "恒玄科技", code: "sz300661", role: "📎 竞对参考" },
+  { name: "晶晨股份", code: "sh688099", role: "📎 赛道参考" },
+  { name: "圣邦股份", code: "sz300673", role: "📎 赛道参考" },
+  { name: "中芯国际", code: "sh688981", role: "🔧 代工参考" },
+  { name: "立昂微",   code: "sh605358", role: "⬆️ 上游参考" },
+];
+
+async function fetchData() {
+  const content = document.getElementById('content');
+  const errorDiv = document.getElementById('error');
+  const btn = document.querySelector('button');
+  btn.textContent = '⟳ 刷新中...';
+  btn.disabled = true;
+  errorDiv.style.display = 'none';
+  content.innerHTML = '<div class="loading">正在获取数据...</div>';
+
+  try {
+    // 新浪财经 JSONP 接口
+    const codes = STOCKS.map(s => s.code).join(',');
+    const resp = await fetch(`https://hq.sinajs.cn/list=${codes}`, {
+      headers: { 'Referer': 'https://finance.sina.com.cn' }
+    });
+    const text = await resp.text();
+    
+    // 编码处理
+    const decoder = new TextDecoder('gbk');
+    const bytes = new Uint8Array(text.split('').map(c => c.charCodeAt(0)));
+    const decoded = decoder.decode(bytes);
+    
+    const data = {};
+    decoded.split('\n').forEach(line => {
+      const m = line.match(/hq_str_\w+="(.+)"/);
+      if (!m) return;
+      const parts = m[1].split(',');
+      if (parts.length < 32) return;
+      const nm = parts[0];
+      const close = parseFloat(parts[3]);
+      const yclose = parseFloat(parts[2]);
+      data[nm] = {
+        price: close, yclose, open: parseFloat(parts[1]),
+        high: parseFloat(parts[4]), low: parseFloat(parts[5]),
+        volume: parseInt(parts[8]) || 0,
+        amount: (parseFloat(parts[9]) / 1e8).toFixed(2),
+        change: +(close - yclose).toFixed(2),
+        pct: yclose ? +((close - yclose) / yclose * 100).toFixed(2) : 0,
+        date: parts[30], time: parts[31],
+      };
+    });
+
+    document.getElementById('lastUpdate').textContent = 
+      `行情: ${data['全志科技']?.date || '--'} ${data['全志科技']?.time || '--'}`;
+
+    let html = '';
+    STOCKS.forEach(s => {
+      const d = data[s.name];
+      if (!d) {
+        html += `<div class="card"><div class="card-header"><span class="name">${s.name}</span><span class="role">${s.role}</span></div><div style="color:#666">暂无数据</div></div>`;
+        return;
+      }
+      const isUp = d.change >= 0;
+      const cls = isUp ? 'up' : 'down';
+      html += `<div class="card">
+        <div class="card-header">
+          <span class="name">${s.name}</span>
+          <span class="role">${s.role}</span>
+        </div>
+        <div class="price-row">
+          <span class="price">¥${d.price.toFixed(2)}</span>
+          <span class="change ${cls}">${isUp ? '▲' : '▼'} ${Math.abs(d.change)} (${d.pct > 0 ? '+' : ''}${d.pct}%)</span>
+        </div>
+        <div class="meta">
+          <span>高 ${d.high.toFixed(2)}</span>
+          <span>低 ${d.low.toFixed(2)}</span>
+          <span>开 ${d.open.toFixed(2)}</span>
+          <span>昨收 ${d.yclose.toFixed(2)}</span>
+          <span>成交 ${d.amount}亿</span>
+        </div>
+        <div class="refresh-time">上次更新: ${d.time || '--'}</div>
+      </div>`;
+    });
+    content.innerHTML = html;
+  } catch(e) {
+    errorDiv.style.display = 'block';
+    errorDiv.innerHTML = `⚠️ 数据获取失败: ${e.message}<br><small>请确认网络连接正常，或稍后重试。</small>`;
+    content.innerHTML = '<div style="text-align:center;padding:20px;color:#666">点击上方按钮重新获取</div>';
+  }
+  btn.textContent = '⟳ 刷新';
+  btn.disabled = false;
+}
+
+fetchData();
+</script>
+</body>
+</html>

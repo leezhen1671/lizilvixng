@@ -1,0 +1,47 @@
+{
+  "date": "2026-06-07 13:21",
+  "stocks": {
+    "全志科技": {
+      "role": "核心持仓",
+      "data": {
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    },
+    "瑞芯微": {
+      "role": "核心持仓",
+      "data": {
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    },
+    "恒玄科技": {
+      "role": "竞对参考",
+      "data": {
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    },
+    "晶晨股份": {
+      "role": "赛道参考",
+      "data": {
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    },
+    "圣邦股份": {
+      "role": "赛道参考",
+      "data": {
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    },
+    "中芯国际": {
+      "role": "代工参考",
+      "data": {
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    },
+    "立昂微": {
+      "role": "上游参考",
+      "data": {
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    }
+  }
+}
