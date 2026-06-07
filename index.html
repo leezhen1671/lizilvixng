@@ -2,232 +2,232 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.5,user-scalable=yes">
-<title>📊 半导体持仓看板</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>全志科技 · 瑞芯微 投资数据</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0a0e17;color:#e0e0e0;padding:12px}
-.container{max-width:900px;margin:0 auto}
-.header{display:flex;justify-content:space-between;align-items:center;padding:12px 0;flex-wrap:wrap;gap:8px}
-.header h1{font-size:20px;font-weight:700;background:linear-gradient(135deg,#00d8ff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.header-right{display:flex;gap:8px;align-items:center}
-#lastUpdate{font-size:11px;color:#666}
-.btn{padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s}
-.btn-primary{background:linear-gradient(135deg,#00d8ff,#0099ff);color:#0a0e17}
-.btn-secondary{background:#1a2835;color:#00d8ff;border:1px solid #2a3f4d}
-.btn:active{opacity:.7}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:12px 0}
-.card{background:linear-gradient(135deg,#111d28,#162836);border-radius:12px;padding:14px;border:1px solid #1e3442;position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.card.up::before{background:linear-gradient(90deg,#2ed573,#7bed9f)}
-.card.down::before{background:linear-gradient(90deg,#ff4757,#ff6b81)}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.name{font-size:14px;font-weight:600}
-.role{font-size:10px;background:#1a2835;color:#666;padding:1px 6px;border-radius:6px}
-.price-row{display:flex;align-items:baseline;gap:8px}
-.price{font-size:22px;font-weight:700}
-.change{font-size:12px;font-weight:500}
-.up{color:#2ed573}.down{color:#ff4757}.flat{color:#666}
-.meta{display:flex;gap:6px;margin-top:6px;font-size:11px;color:#555;flex-wrap:wrap}
-.meta span{background:#0a0e17;padding:2px 8px;border-radius:6px}
-.chart-box{background:linear-gradient(135deg,#111d28,#162836);border-radius:12px;padding:16px;margin:12px 0;border:1px solid #1e3442}
-.chart-title{font-size:14px;font-weight:600;margin-bottom:8px;color:#888}
-.chart{width:100%;height:240px}
-.chart-sm{height:160px}
-.loading{text-align:center;padding:40px;color:#666;font-size:14px}
-.error{background:#2d1b1b;border:1px solid #663;border-radius:10px;padding:12px;margin:12px 0;font-size:13px;color:#ff6b6b}
-.footer{text-align:center;font-size:10px;color:#333;margin-top:20px;line-height:1.8}
-.footer a{color:#00d8ff;text-decoration:none}
+body{background:#0a0e17;color:#c8d0d8;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",sans-serif;padding:12px;min-height:100vh}
+.w{max-width:1200px;margin:0 auto}
+.hd{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #1a2533;margin-bottom:14px}
+.hd h1{font-size:18px;font-weight:600;background:linear-gradient(135deg,#ff6b35,#f7c948);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px}
+.hd .sub{font-size:11px;color:#5a6a7a}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-bottom:16px}
+.stat{background:linear-gradient(135deg,#0f1928,#14212e);border-radius:8px;padding:10px 12px;border:1px solid #1a2a38}
+.stat .v{font-size:16px;font-weight:700;line-height:1.3}
+.stat .l{font-size:10px;color:#6a7a8a;margin-top:2px}
+.section{margin:14px 0 8px;padding:4px 8px;border-left:3px solid #ff6b35;font-size:14px;font-weight:600;color:#d0d8e0}
+.section.s2{border-left-color:#3b8beb}
+.card{background:linear-gradient(135deg,#0c1622,#111d2a);border-radius:8px;padding:12px;border:1px solid #1a2a38;margin-bottom:8px}
+.card .ct{font-size:11px;font-weight:600;color:#8898a8;margin-bottom:6px;padding-left:2px}
+.card .ch{width:100%;height:260px}
+.card .empty{text-align:center;padding:40px 0;color:#3a4a5a;font-size:13px}
+.card .empty .ic{font-size:28px;margin-bottom:8px;opacity:0.5}
+
+.status-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;font-size:11px;color:#5a6a7a}
+.status-bar .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:3px}
+.dot.g{background:#00cc66}
+.dot.y{background:#f0ad4e}
+.dot.r{background:#ff4444}
+.collect-badge{display:inline-block;background:linear-gradient(135deg,#1a2533,#1a2a38);border:1px solid #2a3a4a;border-radius:4px;padding:2px 8px;font-size:10px;color:#7a8a9a;margin-left:6px}
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <h1>📊 半导体持仓看板</h1>
-    <div class="header-right">
-      <span id="lastUpdate"></span>
-      <button class="btn btn-primary" onclick="location.reload()">⟳ 刷新</button>
-    </div>
-  </div>
-  <div id="content"><div class="loading">📡 加载数据中...</div></div>
-  <div class="footer">
-    数据采集于交易日 9:30 · 
-    <a href="https://github.com/leezhen1671/lizilvxing" target="_blank">GitHub</a> ·
-    数据来源: 新浪财经
-  </div>
+<div class="w">
+<div class="hd">
+  <h1>全志科技 · 瑞芯微 投资仪表盘</h1>
+  <div class="sub">数据源: 新浪财经 单季度口径</div>
+</div>
+
+<div class="status-bar">
+  <span><span class="dot g"></span>毛利率数据已确认</span>
+  <span><span class="dot y"></span>部分财务数据待采集</span>
+  <span><span class="dot r"></span>资本开支/自由现金流待采集</span>
+  <span class="collect-badge">每日自动更新 ⚡</span>
+</div>
+
+<!-- 概要统计 -->
+<div class="stats" id="summaryStats"></div>
+
+<!-- ===== 全志科技 ===== -->
+<div class="section">全志科技 (300458)</div>
+<div class="card"><div class="ct">销售毛利率 (%)</div><div class="ch" id="aw_gm"></div></div>
+<div class="card"><div class="ct">营业收入 (亿元)</div><div class="ch" id="aw_rev"></div></div>
+<div class="card"><div class="ct">净利润 (亿元)</div><div class="ch" id="aw_np"></div></div>
+<div class="card"><div class="ct">扣非净利润 (亿元)</div><div class="ch" id="aw_nongaap"></div></div>
+<div class="card"><div class="ct">研发费用 (亿元)</div><div class="ch" id="aw_rd"></div></div>
+<div class="card"><div class="ct">资本开支 (亿元)</div><div class="ch" id="aw_capex"></div></div>
+<div class="card"><div class="ct">自由现金流 (亿元)</div><div class="ch" id="aw_fcf"></div></div>
+
+<!-- ===== 瑞芯微 ===== -->
+<div class="section s2">瑞芯微 (603893)</div>
+<div class="card"><div class="ct">销售毛利率 (%)</div><div class="ch" id="rk_gm"></div></div>
+<div class="card"><div class="ct">营业收入 (亿元)</div><div class="ch" id="rk_rev"></div></div>
+<div class="card"><div class="ct">净利润 (亿元)</div><div class="ch" id="rk_np"></div></div>
+<div class="card"><div class="ct">扣非净利润 (亿元)</div><div class="ch" id="rk_nongaap"></div></div>
+<div class="card"><div class="ct">研发费用 (亿元)</div><div class="ch" id="rk_rd"></div></div>
+<div class="card"><div class="ct">资本开支 (亿元)</div><div class="ch" id="rk_capex"></div></div>
+<div class="card"><div class="ct">自由现金流 (亿元)</div><div class="ch" id="rk_fcf"></div></div>
 </div>
 
 <script>
-(async function(){
-  const STOCKS = [
-    {name:"全志科技",code:"sz300458",role:"⭐ 核心持仓"},
-    {name:"瑞芯微",  code:"sh603893",role:"⭐ 核心持仓"},
-    {name:"恒玄科技",code:"sz300661",role:"📎 竞对参考"},
-    {name:"晶晨股份",code:"sh688099",role:"📎 赛道参考"},
-    {name:"中芯国际",code:"sh688981",role:"🔧 代工参考"},
-    {name:"立昂微",  code:"sh605358",role:"⬆️ 上游参考"},
-  ];
+const ec = echarts;
 
-  // 读取价格历史
-  function getHistory() {
-    try{return JSON.parse(localStorage.getItem('stock_history')||'{}')}catch{return{}}
-  }
-  function saveHistory(data) {
-    const h = getHistory(); const today = new Date().toISOString().slice(0,10);
-    STOCKS.forEach(s => {
-      const d = data[s.name]; if(!d||!d.price) return;
-      if(!h[s.name]) h[s.name]={};
-      h[s.name][today]=d.price;
-      const dates=Object.keys(h[s.name]).sort();
-      if(dates.length>60) delete h[s.name][dates[0]];
-    });
-    localStorage.setItem('stock_history',JSON.stringify(h));
-  }
+// 从框架数据加载
+const EMBEDDED_DATA = {"全志科技":{"gross_margin":{"periods":["2021Q1","2021Q2","2021Q3","2021Q4","2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4","2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"],"values":[30.48,43.29,47.21,40.36,44.46,37.6,34.2,35.85,31.88,31.33,33.46,32.63,33.44,32.68,30.83,28.42,32.53,33.46,32.57,32.96,40.21]},"revenue":{"periods":["2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"],"values":[4.1,6.53,6.23,6.03,6.2,7.17,8.24,6.77,9.12]},"net_profit":{"periods":["2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"],"values":[0.49,0.7,0.32,0.16,0.92,0.7,1.17,-0.16,2.03]},"non_gaap":{"periods":["2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"],"values":[0.17,0.64,0.28,0.07,0.56,0.79,1.11,-0.15,2.01]},"rd":{"periods":[],"values":[]},"capex":{"periods":[],"values":[]},"free_cash_flow":{"periods":[],"values":[]},"market_cap":{"value":322.73,"unit":"亿","date":"2026-06-05"}},"瑞芯微":{"gross_margin":{"periods":["2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"],"values":[34.7,36.8,36.9,39.5,41,43.2,40.8,41.1,43]},"revenue":{"periods":["2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"],"values":[5.43,7.06,9.11,9.77,8.85,11.61,10.96,12.61,12.05]},"net_profit":{"periods":["2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"],"values":[0.68,1.15,1.69,2.43,2.09,3.22,2.48,2.6,3.29]},"non_gaap":{"periods":["2024Q1","2024Q2","2024Q3","2024Q4","2025Q1","2025Q2","2025Q3","2025Q4","2026Q1"],"values":[0.66,1.11,1.67,1.95,2.08,3.08,2.4,2.53,3.2]},"rd":{"periods":[],"values":[]},"capex":{"periods":[],"values":[]},"free_cash_flow":{"periods":[],"values":[]},"market_cap":{"value":729.29,"unit":"亿","date":"2026-06-05"}}};
 
-  const content = document.getElementById('content');
-
+async function loadData() {
   try {
-    // ========== 方案1: 从本地 JSON 数据加载 ==========
-    // 找到最新的数据文件
-    async function loadFromData() {
-      const files = ['snapshot_2026-06-07','snapshot_2026-06-06','snapshot_2026-06-05'];
-      for (const f of files) {
-        try {
-          const r = await fetch(`outputs/data/${f}.json`);
-          if (!r.ok) continue;
-          return await r.json();
-        } catch(e) { continue; }
-      }
-      return null;
-    }
-
-    let snapshot = await loadFromData();
-    
-    if (snapshot) {
-      // 有本地数据，使用本地数据渲染
-      document.getElementById('lastUpdate').textContent = `📅 ${snapshot.date}`;
-      render(snapshot.stocks, true);
-    } else {
-      // ========== 方案2: 无本地数据，通过 CORS 代理实时拉取 ==========
-      const codes = STOCKS.map(s=>s.code).join(',');
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://hq.sinajs.cn/list=${codes}`)}`;
-      const r = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-      const buf = await r.arrayBuffer();
-      const dec = new TextDecoder('gbk');
-      const txt = dec.decode(buf);
-      const data = {};
-      txt.split('\n').forEach(line => {
-        const m = line.match(/hq_str_\w+="(.+)"/); if(!m) return;
-        const p=m[1].split(','); if(p.length<32) return;
-        const close=+p[3], yclose=+p[2];
-        data[p[0]] = {price:close,yclose,open:+p[1],high:+p[4],low:+p[5],
-          amount:(+p[9]/1e8).toFixed(2), change:+(close-yclose).toFixed(2),
-          pct: yclose?+((close-yclose)/yclose*100).toFixed(2):0, time:p[31]};
-      });
-      document.getElementById('lastUpdate').textContent = `🟢 实时数据`;
-      saveHistory(data);
-      render(data, false);
-    }
+    try { const resp = await fetch('./outputs/data/framework_data.json'); return await resp.json(); } catch(e) { console.warn('Using embedded data, fetch failed:', e); return EMBEDDED_DATA; }
   } catch(e) {
-    content.innerHTML = `<div class="error">⚠️ ${e.message}<br><br>
-      <button class="btn btn-primary" onclick="location.reload()">重试</button></div>`;
+    console.warn('数据加载失败:', e);
+    return null;
   }
+}
 
-  function render(data, fromSnapshot) {
-    let html = '<div class="grid">';
-    STOCKS.forEach(s => {
-      const d = data[s.name]?.data || data[s.name];
-      if(!d||!d.price) return html+=`<div class="card"><div class="card-header"><span class="name">${s.name}</span><span class="role">${s.role}</span></div><div style="color:#555">暂无数据</div></div>`;
-      const up = d.change>=0;
-      const cls = up?'up':'down';
-      html+=`<div class="card ${cls}"><div class="card-header"><span class="name">${s.name}</span><span class="role">${s.role}</span></div>
-        <div class="price-row"><span class="price">¥${d.price.toFixed(2)}</span><span class="change ${up?'up':'down'}">${up?'▲':'▼'}${Math.abs(d.change)} (${d.pct>0?'+':''}${d.pct}%)</span></div>
-        <div class="meta"><span>高 ${d.high.toFixed(2)}</span><span>低 ${d.low.toFixed(2)}</span><span>成交 ${d.amount}亿</span></div></div>`;
+// 默认图表配置
+function makeChart(elId, periods, values, opts) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  
+  // 检查是否有数据
+  if (!periods || !values || periods.length === 0) {
+    el.style.height = '60px';
+    el.innerHTML = '<div class="empty"><div class="ic">📭</div>数据待采集，采集后将展示在这里</div>';
+    return;
+  }
+  
+  const chart = ec.init(el);
+  const opt = {
+    tooltip: { trigger: 'axis', backgroundColor: 'rgba(10,14,23,0.9)', borderColor: '#1a2a38',
+      textStyle: { color: '#c8d0d8', fontSize: 12 } },
+    grid: { left: '6%', right: '5%', bottom: '14%', top: '8%' },
+    xAxis: { type: 'category', data: periods,
+      axisLabel: { color: '#5a6a7a', fontSize: 10, interval: 'auto', rotate: periods.length > 20 ? 45 : 0 },
+      axisLine: { lineStyle: { color: '#1a2533' } },
+      splitLine: { show: false } },
+    yAxis: { type: 'value', name: opts?.unit || '',
+      nameTextStyle: { color: '#5a6a7a', fontSize: 10 },
+      axisLabel: { color: '#5a6a7a', fontSize: 10 },
+      splitLine: { lineStyle: { color: '#1a2533', type: 'dashed' } } },
+    dataZoom: periods.length > 12 ? [{ type: 'inside', start: Math.max(0, 100 - 30/periods.length*100) }] : undefined,
+    series: [{
+      type: opts?.type || 'bar',
+      data: values.map((v, i) => ({
+        value: v,
+        itemStyle: {
+          color: i === values.length - 1 ? '#ff6b35' : (opts?.color || '#3b8beb'),
+          borderRadius: [2,2,0,0]
+        }
+      })),
+      markLine: opts?.markLine,
+      smooth: opts?.type === 'line',
+      showSymbol: opts?.type === 'line' && periods.length < 20,
+      lineStyle: opts?.type === 'line' ? { width: 2, color: '#3b8beb' } : undefined,
+      areaStyle: opts?.type === 'line' ? { color: 'rgba(59,139,235,0.08)' } : undefined
+    }]
+  };
+  chart.setOption(opt);
+  window.addEventListener('resize', () => chart.resize());
+}
+
+function renderEmpty(elId, text) {
+  const el = document.getElementById(elId);
+  if (el) {
+    el.style.height = '60px';
+    el.innerHTML = `<div class="empty"><div class="ic">📭</div>${text}</div>`;
+  }
+}
+
+function updateSummary(data) {
+  const div = document.getElementById('summaryStats');
+  if (!div) return;
+  
+  let html = '';
+  if (data['全志科技']) {
+    const aw = data['全志科技'];
+    html += `<div class="stat"><div class="v" style="color:#ff6b35">${
+      aw.gross_margin?.values?.slice(-1)[0]?.toFixed(2) || '--'}%</div><div class="l">全志 最新毛利率</div></div>`;
+    html += `<div class="stat"><div class="v" style="color:#00d8ff">${
+      aw.market_cap?.value || '--'}亿</div><div class="l">全志 市值</div></div>`;
+    const lastRev = aw.revenue?.values?.slice(-1)[0];
+    html += `<div class="stat"><div class="v" style="color:#f39c12">${
+      lastRev ? lastRev.toFixed(2) + '亿' : '--'}</div><div class="l">全志 最新营收</div></div>`;
+  }
+  if (data['瑞芯微']) {
+    const rk = data['瑞芯微'];
+    html += `<div class="stat"><div class="v" style="color:#ff6b35">${
+      rk.gross_margin?.values?.slice(-1)[0]?.toFixed(2) || '--'}%</div><div class="l">瑞芯微 最新毛利率</div></div>`;
+    html += `<div class="stat"><div class="v" style="color:#00d8ff">${
+      rk.market_cap?.value || '--'}亿</div><div class="l">瑞芯微 市值</div></div>`;
+    const lastRev = rk.revenue?.values?.slice(-1)[0];
+    html += `<div class="stat"><div class="v" style="color:#f39c12">${
+      lastRev ? lastRev.toFixed(2) + '亿' : '--'}</div><div class="l">瑞芯微 最新营收</div></div>`;
+  }
+  div.innerHTML = html;
+}
+
+async function init() {
+  const data = await loadData();
+  
+  if (!data) {
+    ['aw_gm','aw_rev','aw_np','aw_nongaap','aw_rd','aw_capex','aw_fcf',
+     'rk_gm','rk_rev','rk_np','rk_nongaap','rk_rd','rk_capex','rk_fcf'].forEach(id => {
+      renderEmpty(id, '数据加载失败，请检查网络或刷新页面');
     });
-    html += '</div>';
-
-    html += '<div class="chart-box"><div class="chart-title">📈 持仓价格趋势</div><div id="trendChart" class="chart"></div></div>';
-    html += '<div class="chart-box"><div class="chart-title">📊 当日涨跌幅对比</div><div id="compareChart" class="chart-sm"></div></div>';
-    
-    // 历史数据表
-    const history = getHistory();
-    if (Object.values(history).some(v => Object.keys(v||{}).length > 0)) {
-      html += '<div class="chart-box"><div class="chart-title">📋 最近价格记录</div><table style="width:100%;font-size:11px;border-collapse:collapse">';
-      const allDates = new Set();
-      STOCKS.forEach(s => { if(history[s.name]) Object.keys(history[s.name]).forEach(d=>allDates.add(d)); });
-      const sortedDates = [...allDates].sort().reverse().slice(0,10);
-      html += '<tr>'+['日期',...STOCKS.filter(s=>history[s.name]).map(s=>s.name),'平均'].map(h=>`<th style="text-align:left;color:#555;padding:4px">${h}</th>`).join('')+'</tr>';
-      sortedDates.forEach(d => {
-        let row = `<td style="color:#888;padding:3px 4px">${d}</td>`;
-        let vals = [];
-        STOCKS.forEach(s => {
-          const v = history[s.name]?.[d];
-          row += `<td style="padding:3px 4px;color:#aaa">${v?'¥'+v.toFixed(2):'-'}</td>`;
-          if(v) vals.push(v);
-        });
-        const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : '-';
-        row += `<td style="padding:3px 4px;color:#888">¥${avg}</td>`;
-        html += `<tr>${row}</tr>`;
-      });
-      html += '</table></div>';
-    }
-
-    content.innerHTML = html;
-
-    // 绘制图表
-    setTimeout(() => {
-      const hc = document.getElementById('trendChart');
-      if (!hc) return;
-      const coreStocks = ['全志科技','瑞芯微'];
-      const allDates = new Set();
-      coreStocks.forEach(n => { if(history[n]) Object.keys(history[n]).forEach(d=>allDates.add(d)); });
-      const dates = [...allDates].sort();
-      const series = coreStocks.map((name,idx) => ({
-        name, type:'line', smooth:true,
-        data: dates.map(d => history[name]?.[d] || null),
-        symbol: 'circle', symbolSize: 4,
-        itemStyle: { color: idx===0 ? '#00d8ff' : '#00ff88' },
-        lineStyle: { width: 2 },
-        areaStyle: { opacity: 0.08 },
-      }));
-      
-      if (dates.length > 0) {
-        const trend = echarts.init(hc);
-        trend.setOption({
-          tooltip: { trigger:'axis', valueFormatter: v => v?'¥'+v.toFixed(2):'-' },
-          grid: { left:50, right:16, top:16, bottom:24 },
-          xAxis: { type:'category', data:dates, axisLabel:{fontSize:10,color:'#555'} },
-          yAxis: { type:'value', splitLine:{lineStyle:{color:'#1a2835'}}, axisLabel:{fontSize:10,color:'#555', formatter:'¥{value}'} },
-          legend: { data: coreStocks, textStyle:{color:'#888',fontSize:11}, bottom:0 },
-          series,
-        });
-        window.addEventListener('resize',()=>trend.resize());
-      }
-
-      const cc = document.getElementById('compareChart');
-      if (!cc) return;
-      const names=[], vals=[], colors=[];
-      STOCKS.forEach(s => {
-        const d = data[s.name]?.data || data[s.name];
-        if(!d||!d.pct) return;
-        names.push(s.name); vals.push(d.pct);
-        colors.push(d.pct>=0?'#2ed573':'#ff4757');
-      });
-      if (names.length > 0) {
-        const compare = echarts.init(cc);
-        compare.setOption({
-          tooltip: { trigger:'axis', formatter:p=>`${p[0].name}<br/>涨跌幅: ${p[0].value}%` },
-          grid: { left:12, right:50, top:8, bottom:20 },
-          xAxis: { type:'category', data:names, axisLabel:{fontSize:10,color:'#888'} },
-          yAxis: { type:'value', axisLabel:{fontSize:10,color:'#555',formatter:'{value}%'}, splitLine:{lineStyle:{color:'#1a2835'}} },
-          series: [{ type:'bar', data:vals.map((v,i)=>({value:v,itemStyle:{color:colors[i]}})), barWidth:'60%' }],
-        });
-        window.addEventListener('resize',()=>compare.resize());
-      }
-    }, 200);
+    return;
   }
-})();
+  
+  updateSummary(data);
+  
+  // 全志科技
+  const aw = data['全志科技'] || {};
+  makeChart('aw_gm', aw.gross_margin?.periods, aw.gross_margin?.values, {unit:'%', markLine: {data:[{yAxis:40,label:{formatter:'40%',color:'#e74c3c',fontSize:10},lineStyle:{color:'#e74c3c',type:'dashed'}}]}, color:'#ff6b35'});
+  makeChart('aw_rev', aw.revenue?.periods, aw.revenue?.values, {unit:'亿元'});
+  makeChart('aw_np', aw.net_profit?.periods, aw.net_profit?.values, {unit:'亿元', color:'#27ae60', type:'bar'});
+  makeChart('aw_nongaap', aw.non_gaap?.periods, aw.non_gaap?.values, {unit:'亿元', color:'#8e44ad', type:'bar'});
+  makeChart('aw_rd', aw.rd?.periods, aw.rd?.values, {unit:'亿元', color:'#3498db', type:'bar'});
+  
+  if (aw.capex?.periods?.length > 0) {
+    makeChart('aw_capex', aw.capex.periods, aw.capex.values, {unit:'亿元', color:'#e67e22'});
+  } else {
+    renderEmpty('aw_capex', '资本开支待采集（需从现金流量表获取）');
+  }
+  if (aw.free_cash_flow?.periods?.length > 0) {
+    makeChart('aw_fcf', aw.free_cash_flow.periods, aw.free_cash_flow.values, {unit:'亿元', color:'#1abc9c', type:'line'});
+  } else {
+    renderEmpty('aw_fcf', '自由现金流待采集（需从现金流量表获取）');
+  }
+  
+  // 瑞芯微
+  const rk = data['瑞芯微'] || {};
+  if (rk.gross_margin?.periods?.length > 0) {
+    makeChart('rk_gm', rk.gross_margin.periods, rk.gross_margin.values, {unit:'%', markLine: {data:[{yAxis:40,label:{formatter:'40%',color:'#e74c3c',fontSize:10},lineStyle:{color:'#e74c3c',type:'dashed'}}]}, color:'#ff6b35'});
+  } else {
+    renderEmpty('rk_gm', '瑞芯微毛利率待采集');
+  }
+  if (rk.revenue?.periods?.length > 0) {
+    makeChart('rk_rev', rk.revenue.periods, rk.revenue.values, {unit:'亿元'});
+  } else {
+    renderEmpty('rk_rev', '瑞芯微营收待采集');
+  }
+  makeChart('rk_np', rk.net_profit?.periods, rk.net_profit?.values, {unit:'亿元', color:'#27ae60'});
+  makeChart('rk_nongaap', rk.non_gaap?.periods, rk.non_gaap?.values, {unit:'亿元', color:'#8e44ad'});
+  makeChart('rk_rd', rk.rd?.periods, rk.rd?.values, {unit:'亿元', color:'#3498db'});
+  
+  if (rk.capex?.periods?.length > 0) {
+    makeChart('rk_capex', rk.capex.periods, rk.capex.values, {unit:'亿元', color:'#e67e22'});
+  } else {
+    renderEmpty('rk_capex', '资本开支待采集');
+  }
+  if (rk.free_cash_flow?.periods?.length > 0) {
+    makeChart('rk_fcf', rk.free_cash_flow.periods, rk.free_cash_flow.values, {unit:'亿元', color:'#1abc9c', type:'line'});
+  } else {
+    renderEmpty('rk_fcf', '自由现金流待采集');
+  }
+}
+
+init();
 </script>
 </body>
 </html>
